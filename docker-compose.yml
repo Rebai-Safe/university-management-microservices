@@ -1,0 +1,104 @@
+version: "3"
+services:
+  config-service:
+    build: config-service
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./config-service
+  
+  
+      
+  register-service:
+    build: register-service
+    ports:
+      - "8761:8761"
+    volumes:
+      - ./register-service
+    hostname: registration
+    depends_on:
+      - config-service
+    links:
+      - config-service
+
+
+  students-service:
+    build: students-service
+    ports:
+      - "8081:8081"
+    volumes:
+      - ./students-service
+    environment:
+    # Important for clients to register with eureka
+      - eureka.client.serviceUrl.defaultZone=http://ec2-3-239-93-252.compute-1.amazonaws.com:8761/eureka/
+    depends_on:
+      - config-service
+      - register-service
+    links:
+      - config-service
+      - register-service
+    
+
+  professors-service:
+    build:  professors-service
+    ports:
+      - "8082:8082"
+    volumes:
+      - ./professors-service
+    environment:
+      # Important for clients to register with eureka
+      - eureka.client.serviceUrl.defaultZone=http://ec2-3-239-93-252.compute-1.amazonaws.com:8761/eureka/
+    depends_on:
+      - config-service
+      - register-service
+    links:
+      - config-service
+      - register-service
+
+   
+
+  cadres_administratifs-service:
+    build: cadres_administratifs-service
+    ports:
+      - "8083:8083"
+    volumes:
+      - ./cadres_administratifs-service
+    environment:
+      # Important for clients to register with eureka
+      - eureka.client.serviceUrl.defaultZone=http://ec2-3-239-93-252.compute-1.amazonaws.com:8761/eureka/
+    depends_on:
+      - config-service
+      - register-service
+    links:
+      - config-service
+      - register-service
+ 
+
+  proxy-service:
+    build: proxy-service
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./proxy-service
+    environment:
+      # Important for clients to register with eureka
+      - eureka.client.serviceUrl.defaultZone=http://ec2-3-239-93-252.compute-1.amazonaws.com:8761/eureka/
+    depends_on:
+      - config-service
+      - register-service
+      - cadres_administratifs-service
+      - students-service
+      - professors-service
+    links:
+      - config-service
+      - register-service
+      - cadres_administratifs-service
+      - students-service
+      - professors-service
+      
+
+
+
+   
+
+  
